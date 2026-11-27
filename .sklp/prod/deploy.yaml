@@ -20,7 +20,7 @@ services:
       timeout: 60s
 
   web:
-    image: rg.fr-par.scw.cloud/lalter-playground/web:20261127-1734-fbfaac2b317b
+    image: rg.fr-par.scw.cloud/lalter-playground/web:20261127-1745-93d4bef4b977
     port: 5273
     depends_on: [core]
     env:
