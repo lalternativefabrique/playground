@@ -44,14 +44,16 @@ type API struct {
 	svc     *Service
 	context PublicContext
 	wipe    Wipe
+	host    *HostSampler
 }
 
-func NewAPI(svc *Service, public PublicContext, wipe Wipe) *API {
-	return &API{svc: svc, context: public, wipe: wipe}
+func NewAPI(svc *Service, public PublicContext, wipe Wipe, host *HostSampler) *API {
+	return &API{svc: svc, context: public, wipe: wipe, host: host}
 }
 
 func (a *API) Register(g *echo.Group) {
 	g.GET("/context", a.getContext)
+	g.GET("/node/resources", a.getResources)
 	g.GET("/spaces", a.listSpaces)
 	g.GET("/spaces/:space", a.getSpace)
 	g.GET("/spaces/:space/logs/:service", a.streamLogs)
@@ -66,6 +68,10 @@ func (a *API) getContext(c echo.Context) error {
 	out.WipesAt = a.wipe.Next(time.Now()).UTC().Format(time.RFC3339)
 	out.WipeLabel = fmt.Sprintf("%02d:00 (%s)", a.wipe.Hour, a.wipe.Zone)
 	return c.JSON(http.StatusOK, out)
+}
+
+func (a *API) getResources(c echo.Context) error {
+	return c.JSON(http.StatusOK, a.host.Resources())
 }
 
 func (a *API) listSpaces(c echo.Context) error {

@@ -5,7 +5,7 @@ import { ExternalLink, RotateCw } from 'lucide-react'
 import { ApiError, api, relativeTime } from '@/lib/api'
 import type { ServiceView, SpaceView } from '@/lib/api'
 import { Shell, useContext } from '@/components/shell'
-import { StatusBadge, StatusDot, appStatus } from '@/components/status'
+import { StatusBadge, StatusDot, appStatus, sourceLabel } from '@/components/status'
 import { Tabs } from '@/components/tabs'
 import { LogsPanel } from '@/components/logs-panel'
 import { CopyableCommand } from '@/components/copyable-command'
@@ -79,13 +79,8 @@ function Header({ app }: { app: SpaceView }) {
         )}
       </div>
       <span className="text-[13px] text-muted-foreground">
-        {app.repo ? (
-          <>
-            <span className="font-mono">{app.repo.repo.replace(/^https:\/\/(github\.com\/)?/, '')}</span> · {app.repo.branch}
-          </>
-        ) : (
-          'not from a followed repo'
-        )}{' '}
+        <span className={app.repo && !app.repo.pinned ? 'font-mono' : ''}>{sourceLabel(app)}</span>
+        {app.repo && !app.repo.pinned && <> · {app.repo.branch}</>}{' '}
         · {app.health.label}
       </span>
     </div>
@@ -265,14 +260,18 @@ function Terminal({ app }: { app: SpaceView }) {
   const ctx = useContext()
   const name = ctx.data?.name ?? 'demo'
   const service = app.services?.[0]?.name ?? '<service>'
+  const login = ctx.data
+    ? `sklp deploy login -context ${name} -server ${ctx.data.server} -token ${ctx.data.token} -ca-fingerprint ${ctx.data.ca_fingerprint}`
+    : 'reading the node…'
   return (
-    <div className="flex max-w-3xl flex-col gap-3">
+    <div className="flex max-w-3xl flex-col gap-4">
       <span className="text-[13px] text-muted-foreground">
-        A shell in a live instance runs from your terminal, against this public node:
+        From your machine, with sklp installed (Connect page, step 1). Run step 1 once; it saves the “{name}” context
+        every other command uses.
       </span>
-      <CopyableCommand cmd={`sklp deploy exec -space ${app.name} -context ${name} ${service} -- sh`} />
-      <CopyableCommand label="follow the logs" cmd={`sklp deploy logs ${service} -f -space ${app.name} -context ${name}`} />
-      <span className="text-xs text-faint">Not connected yet? New app › Terminal shows the one-line login.</span>
+      <CopyableCommand label="1 · Connect to this node (once)" cmd={login} />
+      <CopyableCommand label="2 · Follow the logs" cmd={`sklp deploy logs ${service} -f -space ${app.name} -context ${name}`} />
+      <CopyableCommand label="3 · Open a shell" cmd={`sklp deploy exec -space ${app.name} -context ${name} ${service} -- sh`} />
     </div>
   )
 }

@@ -45,10 +45,12 @@ type ServiceView struct {
 type Service struct {
 	client *Client
 	now    func() time.Time
+	self   string
 }
 
-func NewService(client *Client) *Service {
-	return &Service{client: client, now: time.Now}
+// NewService reads the node; self is the space this console runs in.
+func NewService(client *Client, self string) *Service {
+	return &Service{client: client, now: time.Now, self: self}
 }
 
 type spaceReads struct {

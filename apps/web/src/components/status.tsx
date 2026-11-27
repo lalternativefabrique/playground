@@ -39,3 +39,10 @@ export function StatusBadge({ status }: { status: AppStatus }) {
 }
 
 export const NEEDS_ATTENTION: AppStatus[] = ['degraded', 'down', 'unstable']
+
+export function sourceLabel(app: SpaceView) {
+  if (!app.repo) return 'deployed from a terminal'
+  if (app.repo.pinned) return "node demo, kept through every wipe"
+  return app.repo.repo.replace(/^https:\/\/(github\.com\/)?/, '')
+}
+

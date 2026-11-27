@@ -4,8 +4,9 @@ import { GitBranch, Plus, Terminal } from 'lucide-react'
 import { ApiError, mine, relativeTime } from '@/lib/api'
 import type { SpaceView } from '@/lib/api'
 import { Shell, useContext, useOverview } from '@/components/shell'
-import { NEEDS_ATTENTION, StatusBadge, StatusDot, appStatus } from '@/components/status'
+import { NEEDS_ATTENTION, StatusBadge, StatusDot, appStatus, sourceLabel } from '@/components/status'
 import { NewAppDialog } from '@/components/new-app-dialog'
+import { NodeCapacity } from '@/components/node-capacity'
 
 export const Route = createFileRoute('/apps/')({ component: AppsPage })
 
@@ -68,6 +69,8 @@ function AppsPage() {
           New app
         </button>
       </div>
+
+      <NodeCapacity />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {stats.map((s) => (
@@ -159,11 +162,11 @@ function AppCard({ app }: { app: SpaceView }) {
           <StatusBadge status={status} />
         </span>
       </div>
-      <span className="truncate text-[13px] text-brand-soft">{app.url ? app.url.replace(/^https?:\/\//, '') : 'no public URL'}</span>
+      <span className="truncate text-[13px] text-brand-soft">{app.url ? app.url.replace(/^https?:\/\//, '') : 'internal only, no public route'}</span>
       <div className="flex flex-col gap-1 text-xs text-muted-foreground">
         <span className="flex min-w-0 items-center gap-1.5">
           <GitBranch className="size-3.5 shrink-0" aria-hidden />
-          <span className="truncate font-mono">{app.repo ? app.repo.repo.replace(/^https:\/\/(github\.com\/)?/, '') : 'not from a followed repo'}</span>
+          <span className="truncate font-mono">{sourceLabel(app)}</span>
         </span>
         <span className="truncate font-mono">{app.images.join(', ') || '—'}</span>
       </div>

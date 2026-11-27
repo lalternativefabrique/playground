@@ -90,7 +90,7 @@ func TestOverviewJoinsSpacesToTheirReposAndRolls(t *testing.T) {
 		"GET /v1/spaces/production/manifest": ManifestResponse{},
 		"GET /v1/spaces/hello/manifest":      ManifestResponse{Stack: "hello-repo/web", Routes: []ManifestRoute{{Service: "web", Host: "hello.demo.example"}}},
 	})
-	svc := NewService(c)
+	svc := NewService(c, "playground")
 
 	ov, err := svc.Overview(context.Background())
 	if err != nil {
@@ -190,7 +190,7 @@ func TestTheNodesOwnDemosCannotBeUnfollowed(t *testing.T) {
 		"DELETE /v1/follows/mine": "",
 	})
 	e := echo.New()
-	NewAPI(NewService(c), PublicContext{}, Wipe{Hour: 20, Zone: time.UTC}).Register(e.Group("/api/v1"))
+	NewAPI(NewService(c, "playground"), PublicContext{}, Wipe{Hour: 20, Zone: time.UTC}, NewHostSampler("/proc", "/")).Register(e.Group("/api/v1"))
 	for name, want := range map[string]int{"starter-test": http.StatusForbidden, "mine": http.StatusNoContent} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodDelete, "/api/v1/follows/"+name, nil))

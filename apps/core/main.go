@@ -39,7 +39,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	node.NewAPI(node.NewService(client), public, wipe).Register(e.Group("/api/v1"))
+	host := node.NewHostSampler("/proc", "/")
+	hostCtx, stopHost := context.WithCancel(context.Background())
+	defer stopHost()
+	go host.Run(hostCtx)
+	node.NewAPI(node.NewService(client, envOr("DEMO_SELF_SPACE", "playground")), public, wipe, host).Register(e.Group("/api/v1"))
 
 	port := envOr("PORT", "4100")
 	log.Printf("core listening on :%s", port)

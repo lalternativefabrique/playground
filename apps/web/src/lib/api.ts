@@ -74,6 +74,10 @@ export type SpaceView = {
 
 export type Overview = { node: string; verdict: Verdict; spaces: SpaceView[]; follows: Follow[] }
 
+export type HostSample = { at: string; cpu_pct: number; mem_used: number; disk_used: number; load1: number }
+
+export type HostResources = { cpus: number; mem_total: number; disk_total: number; samples: HostSample[] }
+
 export type PublicContext = {
   name: string
   server: string
@@ -111,6 +115,7 @@ export const api = {
   overview: () => call<Overview>('/spaces'),
   space: (name: string) => call<SpaceView>(`/spaces/${encodeURIComponent(name)}`),
   context: () => call<PublicContext>('/context'),
+  resources: () => call<HostResources>('/node/resources'),
   follow: (repo: string, name?: string, branch?: string) =>
     call<Follow>('/follows', {
       method: 'POST',
@@ -157,4 +162,9 @@ export function mine(): string[] {
 
 export function rememberMine(name: string) {
   localStorage.setItem(MINE_KEY, JSON.stringify([...new Set([...mine(), name])]))
+}
+
+export function formatBytes(n: number) {
+  const gb = n / 1024 ** 3
+  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${Math.round(n / 1024 ** 2)} MB`
 }
