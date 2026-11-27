@@ -8,9 +8,9 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -79,11 +79,14 @@ func TestOverviewJoinsSpacesToTheirReposAndRolls(t *testing.T) {
 		"GET /v1/spaces": SpacesResponse{Node: "demo", Spaces: []SpaceInfo{
 			{Name: "hello", Status: "running", Supervised: true},
 			{Name: "bare", Status: "running"},
+			{Name: "production", Status: "running", Supervised: true},
 		}},
-		"GET /v1/follows":               FollowsResponse{Follows: []Follow{{Name: "hello-repo", Repo: "https://github.com/moi/hello", Branch: "main"}}},
-		"GET /v1/watches":               WatchesResponse{Watches: []Watch{{Name: "web", Space: "hello", Status: "rolling", Rolls: []Roll{{FromTag: "v1", ToTag: "v2", Result: "applied", CreatedAt: rolledAt}}}}},
-		"GET /v1/spaces/hello/state":    StateResponse{Services: []ServiceState{{Name: "web", State: "ready", Image: "traefik/whoami:v1"}}},
-		"GET /v1/spaces/hello/manifest": ManifestResponse{Stack: "hello-repo/web", Routes: []ManifestRoute{{Service: "web", Host: "hello.demo.example"}}},
+		"GET /v1/follows":                    FollowsResponse{Follows: []Follow{{Name: "hello-repo", Repo: "https://github.com/moi/hello", Branch: "main"}}},
+		"GET /v1/watches":                    WatchesResponse{Watches: []Watch{{Name: "web", Space: "hello", Status: "rolling", Rolls: []Roll{{FromTag: "v1", ToTag: "v2", Result: "applied", CreatedAt: rolledAt}}}}},
+		"GET /v1/spaces/hello/state":         StateResponse{Services: []ServiceState{{Name: "web", State: "ready", Image: "traefik/whoami:v1"}}},
+		"GET /v1/spaces/production/state":    StateResponse{},
+		"GET /v1/spaces/production/manifest": ManifestResponse{},
+		"GET /v1/spaces/hello/manifest":      ManifestResponse{Stack: "hello-repo/web", Routes: []ManifestRoute{{Service: "web", Host: "hello.demo.example"}}},
 	})
 	svc := NewService(c)
 
@@ -92,7 +95,7 @@ func TestOverviewJoinsSpacesToTheirReposAndRolls(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(ov.Spaces) != 1 {
-		t.Fatalf("a bare space is not a deploy: %+v", ov.Spaces)
+		t.Fatalf("a bare space and an empty one are not apps: %+v", ov.Spaces)
 	}
 	got := ov.Spaces[0]
 	if got.Repo == nil || got.Repo.Repo != "https://github.com/moi/hello" || got.URL != "http://hello.demo.example" ||
@@ -161,5 +164,17 @@ func TestSocketClientSendsNoToken(t *testing.T) {
 	got, err := NewSocketClient(sock).Spaces(context.Background())
 	if err != nil || got.Node != "demo" {
 		t.Fatalf("spaces over the socket: %+v, %v", got, err)
+	}
+}
+
+func TestNextWipeIsTodayOrTomorrowInTheZone(t *testing.T) {
+	paris, _ := time.LoadLocation("Europe/Paris")
+	w := Wipe{Hour: 20, Zone: paris}
+	before := time.Date(2026, 11, 27, 19, 59, 0, 0, paris)
+	if got := w.Next(before); !got.Equal(time.Date(2026, 11, 27, 20, 0, 0, 0, paris)) {
+		t.Fatalf("before 20:00: %v", got)
+	}
+	if got := w.Next(time.Date(2026, 11, 27, 20, 0, 0, 0, paris)); !got.Equal(time.Date(2026, 11, 28, 20, 0, 0, 0, paris)) {
+		t.Fatalf("at 20:00: %v", got)
 	}
 }

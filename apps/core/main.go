@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
@@ -32,7 +35,11 @@ func main() {
 	e.HideBanner = true
 	e.Use(emw.Recover(), emw.RequestID())
 	health.Register(e)
-	node.NewAPI(node.NewService(client), public).Register(e.Group("/api/v1"))
+	wipe, err := wipeFromEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	node.NewAPI(node.NewService(client), public, wipe).Register(e.Group("/api/v1"))
 
 	port := envOr("PORT", "4100")
 	log.Printf("core listening on :%s", port)
@@ -61,6 +68,18 @@ func nodeClient(public node.PublicContext) (*node.Client, error) {
 		return node.NewSocketClient(sock), nil
 	}
 	return node.NewClient(envOr("DEMO_NODE_URL", public.Server), public.Token, public.CAFingerprint)
+}
+
+func wipeFromEnv() (node.Wipe, error) {
+	zone, err := time.LoadLocation(envOr("DEMO_WIPE_ZONE", "Europe/Paris"))
+	if err != nil {
+		return node.Wipe{}, err
+	}
+	hour, err := strconv.Atoi(envOr("DEMO_WIPE_HOUR", "20"))
+	if err != nil || hour < 0 || hour > 23 {
+		return node.Wipe{}, fmt.Errorf("DEMO_WIPE_HOUR: want 0-23")
+	}
+	return node.Wipe{Hour: hour, Zone: zone}, nil
 }
 
 func envOr(key, fallback string) string {

@@ -74,7 +74,14 @@ export type SpaceView = {
 
 export type Overview = { node: string; verdict: Verdict; spaces: SpaceView[]; follows: Follow[] }
 
-export type PublicContext = { name: string; server: string; token: string; ca_fingerprint: string }
+export type PublicContext = {
+  name: string
+  server: string
+  token: string
+  ca_fingerprint: string
+  wipes_at: string
+  wipe_label: string
+}
 
 const BASE = '/api/core/api/v1'
 
@@ -110,6 +117,8 @@ export const api = {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ repo, name: name || undefined, branch: branch || undefined }),
     }),
+  restart: (space: string, service: string) =>
+    call<void>(`/spaces/${encodeURIComponent(space)}/services/${encodeURIComponent(service)}/restart`, { method: 'POST' }),
   unfollow: (name: string) => call<void>(`/follows/${encodeURIComponent(name)}`, { method: 'DELETE' }),
   logsURL: (space: string, service: string) =>
     `${BASE}/spaces/${encodeURIComponent(space)}/logs/${encodeURIComponent(service)}?follow=1`,
@@ -127,4 +136,25 @@ export function relativeTime(iso?: string, now = Date.now()) {
   const hours = Math.round(mins / 60)
   if (hours < 24) return `${hours}h ago`
   return `${Math.round(hours / 24)}d ago`
+}
+
+export function formatDuration(ms: number) {
+  const mins = Math.floor(ms / 60_000)
+  const h = Math.floor(mins / 60)
+  return h > 0 ? `${h} h ${String(mins % 60).padStart(2, '0')} min` : `${mins} min`
+}
+
+const MINE_KEY = 'playground.mine'
+
+export function mine(): string[] {
+  if (typeof localStorage === 'undefined') return []
+  try {
+    return JSON.parse(localStorage.getItem(MINE_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
+
+export function rememberMine(name: string) {
+  localStorage.setItem(MINE_KEY, JSON.stringify([...new Set([...mine(), name])]))
 }

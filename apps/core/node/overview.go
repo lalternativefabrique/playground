@@ -94,6 +94,9 @@ func (s *Service) Overview(ctx context.Context) (Overview, error) {
 		if !sp.Supervised {
 			continue
 		}
+		if isEmpty(reads[i]) {
+			continue
+		}
 		view := s.view(sp, reads[i], follows.Follows, watches.Watches)
 		verdicts = append(verdicts, view.Health.Verdict)
 		view.Services, view.Watches = nil, nil
@@ -130,6 +133,12 @@ func (s *Service) Space(ctx context.Context, name string) (SpaceView, error) {
 		return s.view(sp, s.readSpace(ctx, name), follows.Follows, watches.Watches), nil
 	}
 	return SpaceView{}, ErrNotFound
+}
+
+// isEmpty is a supervised space that declares and runs nothing, such as the
+// one holding the node's own credentials: not an app.
+func isEmpty(r spaceReads) bool {
+	return r.err == nil && len(r.state.Services) == 0 && len(r.manifest.Services) == 0
 }
 
 func (s *Service) readSpace(ctx context.Context, space string) spaceReads {

@@ -148,6 +148,14 @@ func (c *Client) Unfollow(ctx context.Context, name string) error {
 	return resp.Body.Close()
 }
 
+func (c *Client) Restart(ctx context.Context, space, service string) error {
+	resp, err := c.do(ctx, c.http, http.MethodPost, spacePath(space, "/restart/"+url.PathEscape(service)), nil)
+	if err != nil {
+		return err
+	}
+	return resp.Body.Close()
+}
+
 // Logs streams a service's log; the caller closes it.
 func (c *Client) Logs(ctx context.Context, space, service string, follow bool) (io.ReadCloser, error) {
 	path := spacePath(space, "/logs/"+url.PathEscape(service))

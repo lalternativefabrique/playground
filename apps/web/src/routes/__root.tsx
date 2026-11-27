@@ -12,7 +12,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Playground · try our tools for real' },
+      { title: 'Playground · sklp node' },
       {
         name: 'description',
         content: 'Try our tools for real: a shared sklp node that follows your public repo, and more to come.',
