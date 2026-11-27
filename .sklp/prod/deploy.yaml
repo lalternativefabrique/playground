@@ -4,7 +4,7 @@ name: prod
 
 services:
   core:
-    image: rg.fr-par.scw.cloud/lalter-playground/core:20261127-0921-f7d767d29f87
+    image: rg.fr-par.scw.cloud/lalter-playground/core:20261127-1036-eecb71c93a91
     port: 4100
     env:
       PORT: "4100"
@@ -20,7 +20,7 @@ services:
       timeout: 60s
 
   web:
-    image: rg.fr-par.scw.cloud/lalter-playground/web:20261127-0921-f7d767d29f87
+    image: rg.fr-par.scw.cloud/lalter-playground/web:20261127-1036-eecb71c93a91
     port: 5273
     depends_on: [core]
     env:
