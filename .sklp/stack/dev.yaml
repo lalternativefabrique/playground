@@ -1,0 +1,27 @@
+version: 1
+kind: devstack
+name: dev
+env_files:
+  - .env
+  - .env.local
+
+services:
+  core:
+    run: go run .
+    workdir: apps/core
+    port: 4100
+    ready:
+      http: /health
+      timeout: 90s
+
+  web:
+    run: pnpm install --frozen-lockfile && pnpm --filter @sklp-demo/web dev
+    port: 5273
+    depends_on:
+      - core
+    env:
+      CORE_URL: http://core:4100
+      PORT: "5273"
+    ready:
+      http: /
+      timeout: 300s

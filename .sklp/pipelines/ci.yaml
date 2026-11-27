@@ -1,0 +1,62 @@
+version: 1
+kind: pipeline
+name: ci
+description: |
+  Lint + test each service whose files changed since base_ref. Scope
+  granularity is the service. The `shared` scope retests everything
+  on changes to .sklp/, root Dockerfiles, or workspace files.
+
+inputs:
+  base_ref:
+    type: string
+    required: false
+    default: origin/main
+
+tools:
+  go: "1.26.11"
+  node: "24.19.0"
+  pnpm: "11.3.0"
+
+on:
+  branches: ['**', '!main']
+
+scopes:
+  core:
+    - "apps/core/**"
+    - "Dockerfile"
+    - "go.work"
+  web:
+    - "apps/web/**"
+    - "package.json"
+    - "pnpm-lock.yaml"
+    - "Dockerfile.web"
+  shared:
+    - ".sklp/**"
+    - "Dockerfile"
+
+steps:
+  - name: branch-context
+    tools: []
+    run: |
+      git status --short
+      git branch --show-current
+
+  - name: build-core
+    scope: [core, shared]
+    tools: [go]
+    run: cd apps/core && go build ./... && go vet ./...
+
+  - name: test-core
+    scope: [core, shared]
+    tools: [go]
+    run: cd apps/core && go test ./...
+
+  - name: lint-web
+    scope: [web, shared]
+    tools: [node, pnpm]
+    run: pnpm --filter @sklp-demo/web lint
+
+  - name: typecheck-web
+    scope: [web, shared]
+    tools: [node, pnpm]
+    run: pnpm --filter @sklp-demo/web typecheck

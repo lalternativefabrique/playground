@@ -1,0 +1,45 @@
+version: 1
+kind: deploy
+name: prod
+
+services:
+  core:
+    image: ghcr.io/lalternativefabrique/sklp-demo-core:REPLACE_WITH_PUBLISHED_TAG
+    port: 4100
+    env:
+      PORT: "4100"
+      DEMO_CONTEXT_NAME: demo
+      DEMO_NODE_PUBLIC_URL: ${DEMO_NODE_PUBLIC_URL}
+      DEMO_NODE_TOKEN: ${DEMO_NODE_TOKEN}
+      DEMO_NODE_CA_FINGERPRINT: ${DEMO_NODE_CA_FINGERPRINT}
+    resources:
+      cpu: 250m
+      memory: 64M
+    ready:
+      http: /health
+      timeout: 60s
+
+  web:
+    image: ghcr.io/lalternativefabrique/sklp-demo-web:REPLACE_WITH_PUBLISHED_TAG
+    port: 5273
+    depends_on: [core]
+    env:
+      PORT: "5273"
+      NODE_ENV: production
+      CORE_URL: http://core:4100
+    resources:
+      cpu: 500m
+      memory: 256M
+    ready:
+      tcp: "5273"
+      timeout: 90s
+
+spaces:
+  sklp-demo:
+    gateway:
+      routes:
+        - service: web
+          host: ${APP_HOST}
+          kind: web
+          security_headers: true
+          compress: true

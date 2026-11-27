@@ -1,0 +1,70 @@
+version: 1
+kind: pipeline
+name: publish
+space: false
+description: |
+  Build and push immutable Docker images for services impacted by the
+  merged commit range on `main`.
+
+  Image policy: ghcr.io/lalternativefabrique/sklp-demo-<service>:<date>-<short-sha>
+  Tags are immutable — no `latest`, no overwrites. Trivy blocks the push
+  on any fixable HIGH/CRITICAL finding.
+
+  Publishing the image is NOT deployment. The deployment is
+  .sklp/prod/deploy.yaml; once it is live, the watches of
+  .sklp/image-watches.yaml roll each new tag onto its space.
+
+on:
+  branches: [main]
+  clean_tree: true
+
+env_files:
+  - .env
+  - .env.local
+
+tag:
+  strategy: date-sha
+
+secrets:
+  - GHCR_TOKEN
+
+registries:
+  ghcr.io:
+    username: ${GHCR_USER}
+    password: ${GHCR_TOKEN}
+
+tools:
+  go: "1.26.11"
+  node: "24.19.0"
+  pnpm: "11.3.0"
+
+scopes:
+  core:
+    - "apps/core/**"
+    - "Dockerfile"
+    - "go.work"
+  web:
+    - "apps/web/**"
+    - "package.json"
+    - "pnpm-lock.yaml"
+    - "pnpm-workspace.yaml"
+    - "Dockerfile.web"
+
+steps:
+  - name: core-image
+    kind: publish
+    platform: linux/amd64
+    scope: [core]
+    context: .
+    dockerfile: Dockerfile
+    image: ghcr.io/lalternativefabrique/sklp-demo-core
+    tag: "{{ publish_tag }}"
+
+  - name: web-image
+    kind: publish
+    platform: linux/amd64
+    scope: [web]
+    context: .
+    dockerfile: Dockerfile.web
+    image: ghcr.io/lalternativefabrique/sklp-demo-web
+    tag: "{{ publish_tag }}"

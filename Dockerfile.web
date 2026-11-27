@@ -1,0 +1,35 @@
+# web image — SSR server (TanStack Start + Nitro)
+# Pin pnpm explicitly (never @latest in Dockerfile.web — see memory).
+FROM node:24-bookworm AS build
+RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
+WORKDIR /src
+ENV CI=true
+# Workspace manifests first (better layer caching).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/package.json
+RUN pnpm install --frozen-lockfile
+# Then the sources.
+COPY apps/web ./apps/web
+RUN pnpm --filter @sklp-demo/web build
+# Prune to production deps for the runtime image.
+RUN pnpm deploy --filter @sklp-demo/web --prod --legacy /prod
+
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production
+# Bookworm base tags lag bookworm-security, and the npm bundled in the base
+# carries its own vulnerable deps that the server never loads; both are cleared
+# in one layer for the Trivy gate.
+RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+ && groupadd -g 10001 app \
+ && useradd -u 10001 -g app -M -s /usr/sbin/nologin app
+WORKDIR /app
+COPY --from=build /prod/node_modules ./node_modules
+COPY --from=build /src/apps/web/.output ./.output
+USER 10001:10001
+ENV PORT=5273
+EXPOSE 5273
+CMD ["node", ".output/server/index.mjs"]

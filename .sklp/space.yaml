@@ -1,0 +1,18 @@
+runner:
+  registry: ghcr.io/lalternativefabrique
+
+  toolchain:
+    go: "1.26.11"
+    node: "24.19.0"
+    pnpm: "11.3.0"
+    gitleaks: "8.18.4"
+    trivy: "0.70.0"
+
+  packages:
+    - git
+    - ca-certificates
+    - curl
+
+  go_tools:
+    - golang.org/x/vuln/cmd/govulncheck@v1.1.4
+
