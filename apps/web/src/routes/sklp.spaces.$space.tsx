@@ -9,7 +9,7 @@ import { ResultBadge, StateCell, VerdictPill } from '@/components/verdict'
 import { CopyableCommand } from '@/components/copyable-command'
 import { LogsPanel } from '@/components/logs-panel'
 
-export const Route = createFileRoute('/spaces/$space')({ component: SpacePage })
+export const Route = createFileRoute('/sklp/spaces/$space')({ component: SpacePage })
 
 const POLL_MS = 5_000
 
@@ -23,7 +23,7 @@ function SpacePage() {
       <TopBar node={space.data ? 'demo' : undefined} />
       <main className="mx-auto flex max-w-6xl flex-col gap-8 px-6 pb-16 pt-8">
         <nav aria-label="Breadcrumb" className="flex gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">
+          <Link to="/sklp" className="hover:text-foreground">
             Spaces
           </Link>
           <span>/</span>

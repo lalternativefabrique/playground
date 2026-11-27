@@ -17,4 +17,4 @@ steps:
 
   - name: build-web
     tools: [node, pnpm]
-    run: pnpm --filter @sklp-demo/web build
+    run: pnpm --filter @playground/web build

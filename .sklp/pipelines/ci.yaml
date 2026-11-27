@@ -54,9 +54,9 @@ steps:
   - name: lint-web
     scope: [web, shared]
     tools: [node, pnpm]
-    run: pnpm --filter @sklp-demo/web lint
+    run: pnpm --filter @playground/web lint
 
   - name: typecheck-web
     scope: [web, shared]
     tools: [node, pnpm]
-    run: pnpm --filter @sklp-demo/web typecheck
+    run: pnpm --filter @playground/web typecheck

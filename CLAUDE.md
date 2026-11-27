@@ -1,6 +1,6 @@
-# sklp-demo
+# playground
 
-The page of the public sklp demo node. Go core (`apps/core`, Echo) reads the
+Try our tools for real. `/sklp` is the public sklp demo node. Go core (`apps/core`, Echo) reads the
 node's control API; TanStack Start web (`apps/web`) renders and relays
 `/api/core/*` to it. No database, no accounts.
 

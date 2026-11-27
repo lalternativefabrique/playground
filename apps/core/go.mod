@@ -1,4 +1,4 @@
-module sklp-demo/core
+module playground/core
 
 go 1.26.11
 

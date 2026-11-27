@@ -10,9 +10,9 @@ COPY apps/web/package.json ./apps/web/package.json
 RUN pnpm install --frozen-lockfile
 # Then the sources.
 COPY apps/web ./apps/web
-RUN pnpm --filter @sklp-demo/web build
+RUN pnpm --filter @playground/web build
 # Prune to production deps for the runtime image.
-RUN pnpm deploy --filter @sklp-demo/web --prod --legacy /prod
+RUN pnpm deploy --filter @playground/web --prod --legacy /prod
 
 FROM node:24-bookworm-slim
 ENV NODE_ENV=production

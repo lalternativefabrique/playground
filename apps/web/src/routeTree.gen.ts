@@ -10,17 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SpacesSpaceRouteImport } from './routes/spaces.$space'
+import { Route as SklpIndexRouteImport } from './routes/sklp.index'
 import { Route as ApiCoreSplatRouteImport } from './routes/api/core.$'
+import { Route as SklpSpacesSpaceRouteImport } from './routes/sklp.spaces.$space'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SpacesSpaceRoute = SpacesSpaceRouteImport.update({
-  id: '/spaces/$space',
-  path: '/spaces/$space',
+const SklpIndexRoute = SklpIndexRouteImport.update({
+  id: '/sklp/',
+  path: '/sklp/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCoreSplatRoute = ApiCoreSplatRouteImport.update({
@@ -28,35 +29,44 @@ const ApiCoreSplatRoute = ApiCoreSplatRouteImport.update({
   path: '/api/core/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SklpSpacesSpaceRoute = SklpSpacesSpaceRouteImport.update({
+  id: '/sklp/spaces/$space',
+  path: '/sklp/spaces/$space',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/spaces/$space': typeof SpacesSpaceRoute
+  '/sklp/': typeof SklpIndexRoute
   '/api/core/$': typeof ApiCoreSplatRoute
+  '/sklp/spaces/$space': typeof SklpSpacesSpaceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/spaces/$space': typeof SpacesSpaceRoute
+  '/sklp': typeof SklpIndexRoute
   '/api/core/$': typeof ApiCoreSplatRoute
+  '/sklp/spaces/$space': typeof SklpSpacesSpaceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/spaces/$space': typeof SpacesSpaceRoute
+  '/sklp/': typeof SklpIndexRoute
   '/api/core/$': typeof ApiCoreSplatRoute
+  '/sklp/spaces/$space': typeof SklpSpacesSpaceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/spaces/$space' | '/api/core/$'
+  fullPaths: '/' | '/sklp/' | '/api/core/$' | '/sklp/spaces/$space'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/spaces/$space' | '/api/core/$'
-  id: '__root__' | '/' | '/spaces/$space' | '/api/core/$'
+  to: '/' | '/sklp' | '/api/core/$' | '/sklp/spaces/$space'
+  id: '__root__' | '/' | '/sklp/' | '/api/core/$' | '/sklp/spaces/$space'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SpacesSpaceRoute: typeof SpacesSpaceRoute
+  SklpIndexRoute: typeof SklpIndexRoute
   ApiCoreSplatRoute: typeof ApiCoreSplatRoute
+  SklpSpacesSpaceRoute: typeof SklpSpacesSpaceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,11 +78,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/spaces/$space': {
-      id: '/spaces/$space'
-      path: '/spaces/$space'
-      fullPath: '/spaces/$space'
-      preLoaderRoute: typeof SpacesSpaceRouteImport
+    '/sklp/': {
+      id: '/sklp/'
+      path: '/sklp'
+      fullPath: '/sklp/'
+      preLoaderRoute: typeof SklpIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/core/$': {
@@ -82,13 +92,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCoreSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sklp/spaces/$space': {
+      id: '/sklp/spaces/$space'
+      path: '/sklp/spaces/$space'
+      fullPath: '/sklp/spaces/$space'
+      preLoaderRoute: typeof SklpSpacesSpaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SpacesSpaceRoute: SpacesSpaceRoute,
+  SklpIndexRoute: SklpIndexRoute,
   ApiCoreSplatRoute: ApiCoreSplatRoute,
+  SklpSpacesSpaceRoute: SklpSpacesSpaceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -12,8 +12,8 @@ import (
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 
-	"sklp-demo/core/health"
-	"sklp-demo/core/node"
+	"playground/core/health"
+	"playground/core/node"
 )
 
 func main() {

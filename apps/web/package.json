@@ -1,5 +1,5 @@
 {
-  "name": "@sklp-demo/web",
+  "name": "@playground/web",
   "private": true,
   "type": "module",
   "imports": {
