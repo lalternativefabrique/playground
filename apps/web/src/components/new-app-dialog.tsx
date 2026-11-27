@@ -10,7 +10,7 @@ type Tab = 'repo' | 'compose' | 'cli' | 'agent'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'repo', label: 'Git repo' },
-  { id: 'compose', label: 'Docker Compose · soon' },
+  { id: 'compose', label: 'Docker Compose' },
   { id: 'cli', label: 'Terminal' },
   { id: 'agent', label: 'Agent (MCP)' },
 ]
@@ -53,7 +53,7 @@ export function NewAppDialog({ ctx, onClose }: { ctx?: PublicContext; onClose: (
       </div>
       <div className="p-5">
         {tab === 'repo' && <RepoForm onDone={() => dialog.current?.close()} />}
-        {tab === 'compose' && <ComposeSoon />}
+        {tab === 'compose' && <ComposeSteps />}
         {tab === 'cli' && <CliSteps ctx={ctx} />}
         {tab === 'agent' && <AgentSteps ctx={ctx} />}
       </div>
@@ -152,21 +152,26 @@ function RepoForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ComposeSoon() {
+function ComposeSteps() {
   return (
-    <div className="flex flex-col gap-3 text-[13px] text-muted-foreground">
-      <span className="font-medium text-foreground">Coming soon</span>
-      <span>
-        sklp imports a Compose file for local dev today; turning it into a deploy on a node is being built. Until then,
-        put a <code className="font-mono">.sklp/</code> in your repo and use the Git repo tab.
+    <div className="flex flex-col gap-3">
+      <span className="text-[13px] text-muted-foreground">
+        sklp turns your Compose file into a deploy. In your repo, with sklp 0.2.23 or later:
       </span>
-      <button
-        type="button"
-        disabled
-        className="ml-auto h-10 cursor-not-allowed rounded-lg border border-input px-4.5 text-sm font-semibold text-faint"
-      >
-        Deploy · soon
-      </button>
+      <CopyableCommand label="1 · Convert compose.yaml" cmd="sklp init -from compose -to deploy -stack web" />
+      <span className="text-[13px] text-muted-foreground">
+        2 · Open <code className="font-mono">.sklp/web/deploy.yaml</code> and resolve every{' '}
+        <code className="font-mono">TODO(import)</code>: <code className="font-mono">build:</code> needs a public image, host
+        mounts become named volumes, and each route needs a host on this node.
+      </span>
+      <CopyableCommand
+        label="3 · Tell the node what to deploy (.sklp/deploy-root.yaml)"
+        cmd={'node: sklet-demo-v1-server\nstacks:\n  - web'}
+      />
+      <span className="text-[13px] text-muted-foreground">
+        4 · Push, then follow the repo from the Git repo tab. Kubernetes manifests work the same way with{' '}
+        <code className="font-mono">sklp init -from k8s</code>.
+      </span>
     </div>
   )
 }
