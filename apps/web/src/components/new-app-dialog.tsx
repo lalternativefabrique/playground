@@ -166,7 +166,7 @@ function ComposeSteps() {
       </span>
       <CopyableCommand
         label="3 · Tell the node what to deploy (.sklp/deploy-root.yaml)"
-        cmd={'node: sklet-demo-v1-server\nstacks:\n  - web'}
+        cmd={'kind: deploy-root\nnode: sklet-demo-v1-server\ndeployments:\n  - space: my-app\n    path: .sklp/web/deploy.yaml'}
       />
       <span className="text-[13px] text-muted-foreground">
         4 · Push, then follow the repo from the Git repo tab. Kubernetes manifests work the same way with{' '}
