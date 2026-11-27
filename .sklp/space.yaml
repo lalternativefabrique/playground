@@ -1,5 +1,5 @@
 runner:
-  registry: ghcr.io/lalternativefabrique
+  registry: rg.fr-par.scw.cloud/sklp-demo
 
   toolchain:
     go: "1.26.11"

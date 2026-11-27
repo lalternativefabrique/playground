@@ -24,6 +24,6 @@ sklp dev stack          # core :4100, web :5273
 space:
 
 ```bash
-sklp run publish                         # ghcr.io/lalternativefabrique/sklp-demo-{core,web}
+sklp run publish                         # rg.fr-par.scw.cloud/sklp-demo/{core,web}, a public namespace
 sklp deploy apply prod -context demo
 ```

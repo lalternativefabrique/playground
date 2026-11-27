@@ -6,7 +6,7 @@ description: |
   Build and push immutable Docker images for services impacted by the
   merged commit range on `main`.
 
-  Image policy: ghcr.io/lalternativefabrique/sklp-demo-<service>:<date>-<short-sha>
+  Image policy: rg.fr-par.scw.cloud/sklp-demo/<service>:<date>-<short-sha>
   Tags are immutable — no `latest`, no overwrites. Trivy blocks the push
   on any fixable HIGH/CRITICAL finding.
 
@@ -26,12 +26,12 @@ tag:
   strategy: date-sha
 
 secrets:
-  - GHCR_TOKEN
+  - SCW_SECRET_KEY
 
 registries:
-  ghcr.io:
-    username: ${GHCR_USER}
-    password: ${GHCR_TOKEN}
+  rg.fr-par.scw.cloud:
+    username: nologin
+    password: ${SCW_SECRET_KEY}
 
 tools:
   go: "1.26.11"
@@ -57,7 +57,7 @@ steps:
     scope: [core]
     context: .
     dockerfile: Dockerfile
-    image: ghcr.io/lalternativefabrique/sklp-demo-core
+    image: rg.fr-par.scw.cloud/sklp-demo/core
     tag: "{{ publish_tag }}"
 
   - name: web-image
@@ -66,5 +66,5 @@ steps:
     scope: [web]
     context: .
     dockerfile: Dockerfile.web
-    image: ghcr.io/lalternativefabrique/sklp-demo-web
+    image: rg.fr-par.scw.cloud/sklp-demo/web
     tag: "{{ publish_tag }}"

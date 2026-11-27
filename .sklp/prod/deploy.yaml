@@ -4,7 +4,7 @@ name: prod
 
 services:
   core:
-    image: ghcr.io/lalternativefabrique/sklp-demo-core:REPLACE_WITH_PUBLISHED_TAG
+    image: rg.fr-par.scw.cloud/sklp-demo/core:REPLACE_WITH_PUBLISHED_TAG
     port: 4100
     env:
       PORT: "4100"
@@ -20,7 +20,7 @@ services:
       timeout: 60s
 
   web:
-    image: ghcr.io/lalternativefabrique/sklp-demo-web:REPLACE_WITH_PUBLISHED_TAG
+    image: rg.fr-par.scw.cloud/sklp-demo/web:REPLACE_WITH_PUBLISHED_TAG
     port: 5273
     depends_on: [core]
     env:
