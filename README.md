@@ -25,6 +25,6 @@ sklp dev stack          # core :4100, web :5273
 space:
 
 ```bash
-sklp run publish                         # rg.fr-par.scw.cloud/playground/{core,web}, a public namespace
+sklp run publish                         # rg.fr-par.scw.cloud/lalter-playground/{core,web}, a public namespace
 sklp deploy apply prod -context demo
 ```

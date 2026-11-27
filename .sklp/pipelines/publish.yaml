@@ -6,7 +6,7 @@ description: |
   Build and push immutable Docker images for services impacted by the
   merged commit range on `main`.
 
-  Image policy: rg.fr-par.scw.cloud/playground/<service>:<date>-<short-sha>
+  Image policy: rg.fr-par.scw.cloud/lalter-playground/<service>:<date>-<short-sha>
   Tags are immutable — no `latest`, no overwrites. Trivy blocks the push
   on any fixable HIGH/CRITICAL finding.
 
@@ -57,7 +57,7 @@ steps:
     scope: [core]
     context: .
     dockerfile: Dockerfile
-    image: rg.fr-par.scw.cloud/playground/core
+    image: rg.fr-par.scw.cloud/lalter-playground/core
     tag: "{{ publish_tag }}"
 
   - name: web-image
@@ -66,5 +66,5 @@ steps:
     scope: [web]
     context: .
     dockerfile: Dockerfile.web
-    image: rg.fr-par.scw.cloud/playground/web
+    image: rg.fr-par.scw.cloud/lalter-playground/web
     tag: "{{ publish_tag }}"

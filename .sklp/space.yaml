@@ -1,5 +1,5 @@
 runner:
-  registry: rg.fr-par.scw.cloud/playground
+  registry: rg.fr-par.scw.cloud/lalter-playground
 
   toolchain:
     go: "1.26.11"
