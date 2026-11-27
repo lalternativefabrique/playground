@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -68,6 +69,21 @@ func NewClient(server, token, fingerprint string) (*Client, error) {
 		http:   &http.Client{Transport: transport, Timeout: 8 * time.Second},
 		stream: &http.Client{Transport: transport},
 	}, nil
+}
+
+// NewSocketClient talks to the node over the control socket it mounts in a
+// granted service: the socket is the credential, no token and no TLS.
+func NewSocketClient(path string) *Client {
+	transport := &http.Transport{
+		DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+			return (&net.Dialer{}).DialContext(ctx, "unix", path)
+		},
+	}
+	return &Client{
+		base:   "http://node",
+		http:   &http.Client{Transport: transport, Timeout: 8 * time.Second},
+		stream: &http.Client{Transport: transport},
+	}
 }
 
 func normalizeFingerprint(fp string) string {
@@ -159,7 +175,9 @@ func (c *Client) do(ctx context.Context, client *http.Client, method, path strin
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -176,7 +194,7 @@ func (c *Client) do(ctx context.Context, client *http.Client, method, path strin
 	case resp.StatusCode == http.StatusNotFound && method == http.MethodGet:
 		return nil, ErrNotFound
 	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
-		return nil, &NodeError{Status: http.StatusBadGateway, Message: "the demo node refused this server's token"}
+		return nil, &NodeError{Status: http.StatusBadGateway, Message: "the demo node refused this request: " + strings.TrimSpace(string(msg))}
 	default:
 		return nil, &NodeError{Status: resp.StatusCode, Message: strings.TrimSpace(string(msg))}
 	}

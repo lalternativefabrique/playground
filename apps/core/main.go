@@ -23,7 +23,7 @@ func main() {
 		Token:         os.Getenv("DEMO_NODE_TOKEN"),
 		CAFingerprint: os.Getenv("DEMO_NODE_CA_FINGERPRINT"),
 	}
-	client, err := node.NewClient(envOr("DEMO_NODE_URL", public.Server), public.Token, public.CAFingerprint)
+	client, err := nodeClient(public)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,6 +50,17 @@ func main() {
 	if err := e.Shutdown(drainCtx); err != nil {
 		log.Printf("http shutdown: %v", err)
 	}
+}
+
+// nodeClient prefers the control socket the node mounts in a granted
+// service; the token is then only shown to visitors, never used.
+func nodeClient(public node.PublicContext) (*node.Client, error) {
+	sock := envOr("DEMO_NODE_SOCKET", "/run/sklp/control.sock")
+	if _, err := os.Stat(sock); err == nil {
+		log.Printf("node: control socket %s", sock)
+		return node.NewSocketClient(sock), nil
+	}
+	return node.NewClient(envOr("DEMO_NODE_URL", public.Server), public.Token, public.CAFingerprint)
 }
 
 func envOr(key, fallback string) string {

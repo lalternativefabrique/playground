@@ -6,7 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -132,5 +135,31 @@ func TestNodeRefusalsReachTheVisitor(t *testing.T) {
 	ne, ok := err.(*NodeError)
 	if !ok || ne.Status != http.StatusConflict || !strings.Contains(ne.Message, "taken") {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestSocketClientSendsNoToken(t *testing.T) {
+	dir, err := os.MkdirTemp("", "s")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	sock := filepath.Join(dir, "control.sock")
+	ln, err := net.Listen("unix", sock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "" {
+			http.Error(w, "token sent", http.StatusBadRequest)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(SpacesResponse{Node: "demo"})
+	})}
+	go func() { _ = srv.Serve(ln) }()
+	t.Cleanup(func() { _ = srv.Close() })
+	got, err := NewSocketClient(sock).Spaces(context.Background())
+	if err != nil || got.Node != "demo" {
+		t.Fatalf("spaces over the socket: %+v, %v", got, err)
 	}
 }
