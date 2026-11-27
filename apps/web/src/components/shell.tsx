@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, BookOpen, GitBranch, LayoutGrid, Server } from 'lucide-react'
+import { AlertTriangle, BookOpen, GitBranch, LayoutGrid, Terminal } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { api, formatDuration } from '@/lib/api'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const POLL_MS = 10_000
 
@@ -28,7 +29,7 @@ function useWipeIn(at?: string) {
 const NAV = [
   { to: '/apps', label: 'Apps', icon: LayoutGrid },
   { to: '/sources', label: 'Sources', icon: GitBranch },
-  { to: '/node', label: 'Node', icon: Server },
+  { to: '/node', label: 'Connect', icon: Terminal },
 ] as const
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -41,20 +42,20 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col">
       <div
         role="note"
-        className="flex flex-wrap items-center gap-x-3.5 gap-y-2 border-b border-amber-700 bg-[#3a2a06] px-6 py-2.5 text-[13.5px] text-amber-200"
+        className="flex flex-wrap items-center gap-x-3.5 gap-y-2 border-b border-amber-400 dark:border-amber-700 bg-amber-100 dark:bg-[#3a2a06] px-6 py-2.5 text-[13.5px] text-amber-900 dark:text-amber-200"
       >
-        <AlertTriangle className="size-[18px] shrink-0 text-amber-400" aria-hidden />
-        <strong className="text-amber-50">Playground: everything here is thrown away.</strong>
+        <AlertTriangle className="size-[18px] shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+        <strong className="text-amber-950 dark:text-amber-50">Playground: everything here is thrown away.</strong>
         <span>
           Every app, log and follow is wiped daily at {ctx.data?.wipe_label ?? '20:00'}. Nothing is backed up, nothing is
           production-ready, and anyone can see or break what you deploy. No real data, no secrets.
         </span>
-        {wipeIn && <span className="ml-auto whitespace-nowrap font-semibold text-amber-50">Wipe in {wipeIn}</span>}
+        {wipeIn && <span className="ml-auto whitespace-nowrap font-semibold text-amber-950 dark:text-amber-50">Wipe in {wipeIn}</span>}
       </div>
       <div className="flex flex-1 flex-wrap">
         <aside className="flex min-w-[200px] max-w-[260px] flex-[1_1_232px] flex-col gap-1.5 border-r bg-panel px-3.5 py-5">
           <Link to="/apps" className="flex items-center gap-2.5 px-2 pb-4 pt-1">
-            <span className="inline-flex size-7 items-center justify-center rounded-md bg-brand font-bold text-background">p</span>
+            <span className="inline-flex size-7 items-center justify-center rounded-md bg-brand font-bold text-brand-foreground">p</span>
             <span className="text-[15px] font-semibold">playground</span>
           </Link>
           <nav aria-label="Main" className="flex flex-col gap-1">
@@ -76,6 +77,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <BookOpen className="size-4" aria-hidden />
               Docs
             </a>
+            <ThemeToggle />
           </nav>
           <div className="mt-auto flex flex-col gap-1.5 rounded-xl border p-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-2 font-medium text-foreground">

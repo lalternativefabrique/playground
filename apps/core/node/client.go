@@ -113,7 +113,9 @@ func (c *Client) Manifest(ctx context.Context, space string) (ManifestResponse, 
 
 func (c *Client) Follows(ctx context.Context) (FollowsResponse, error) {
 	var out FollowsResponse
-	return out, c.getJSON(ctx, "/v1/follows", &out)
+	err := c.getJSON(ctx, "/v1/follows", &out)
+	out.Follows = pin(out.Follows)
+	return out, err
 }
 
 // Watches answers an empty list on a node too old to serve the route.

@@ -23,7 +23,7 @@ export function CopyableCommand({ cmd, label }: { cmd: string; label?: string })
           aria-label={`Copy: ${label ?? cmd}`}
           className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground"
         >
-          {copied ? <Check className="size-3.5 text-green-400" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="size-3.5 text-green-700 dark:text-green-400" /> : <Copy className="size-3.5" />}
         </button>
       </div>
     </div>

@@ -38,7 +38,7 @@ function AppPage() {
       </nav>
       {app.isPending && <p className="text-sm text-muted-foreground">Reading the node…</p>}
       {app.isError && (
-        <p role="alert" className="rounded-xl border border-red-900 p-4 text-sm text-red-300">
+        <p role="alert" className="rounded-xl border border-red-300 dark:border-red-900 p-4 text-sm text-red-700 dark:text-red-300">
           {app.error instanceof ApiError && app.error.status === 404
             ? `No app named ${name} runs on the node: it may have been wiped.`
             : 'The node is unreachable.'}
@@ -72,7 +72,7 @@ function Header({ app }: { app: SpaceView }) {
             href={app.url}
             target="_blank"
             rel="noreferrer"
-            className="ml-auto inline-flex h-[38px] items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-background"
+            className="ml-auto inline-flex h-[38px] items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-brand-foreground"
           >
             Open app <ExternalLink className="size-3.5" aria-hidden />
           </a>
@@ -152,7 +152,7 @@ function ServiceRow({ app, service }: { app: string; service: ServiceView }) {
       <td className="px-4 py-3">
         <span className="inline-flex items-center gap-2">
           <span className={`size-2 rounded-full ${HEALTH_DOT[service.health]}`} />
-          <span className={service.health === 'failed' ? 'font-medium text-red-400' : ''}>{service.state}</span>
+          <span className={service.health === 'failed' ? 'font-medium text-red-600 dark:text-red-400' : ''}>{service.state}</span>
         </span>
         {service.restarts > 0 && <span className="ml-2 text-xs text-muted-foreground">restarted {service.restarts}×</span>}
       </td>
@@ -180,10 +180,10 @@ function ServiceRow({ app, service }: { app: string; service: ServiceView }) {
 type Event = { key: string; result: string; kind: string; what: string; detail: string; at: string }
 
 const RESULT_BADGE: Record<string, string> = {
-  live: 'bg-green-900/40 text-green-300',
-  applied: 'bg-blue-900/40 text-blue-300',
-  rolled_back: 'bg-amber-900/40 text-amber-300',
-  failed: 'bg-red-900/40 text-red-300',
+  live: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
+  applied: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
+  rolled_back: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300',
+  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
 }
 
 function Deployments({ app }: { app: SpaceView }) {
@@ -221,12 +221,12 @@ function Deployments({ app }: { app: SpaceView }) {
   return (
     <ol className="rounded-xl border">
       {events.map((e) => (
-        <li key={e.key} className="flex flex-wrap items-center gap-3 border-b border-zinc-900 px-4 py-3 text-[13.5px] last:border-b-0">
-          <span className={`min-w-[86px] rounded-full px-2.5 py-0.5 text-center text-[11px] font-semibold ${RESULT_BADGE[e.result] ?? 'bg-zinc-800 text-zinc-300'}`}>
+        <li key={e.key} className="flex flex-wrap items-center gap-3 border-b border-zinc-100 dark:border-zinc-900 px-4 py-3 text-[13.5px] last:border-b-0">
+          <span className={`min-w-[86px] rounded-full px-2.5 py-0.5 text-center text-[11px] font-semibold ${RESULT_BADGE[e.result] ?? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'}`}>
             {e.result.replace('_', ' ')}
           </span>
           <span className="font-semibold">{e.kind}</span>
-          <span className="font-mono text-[12.5px] text-zinc-300">{e.what}</span>
+          <span className="font-mono text-[12.5px] text-zinc-700 dark:text-zinc-300">{e.what}</span>
           {e.detail && <span className="text-muted-foreground">{e.detail}</span>}
           <span className="ml-auto text-[12.5px] text-muted-foreground">{relativeTime(e.at)}</span>
         </li>
@@ -307,8 +307,13 @@ function Settings({ app }: { app: SpaceView }) {
         Volumes live until the wipe and are never backed up. Settings come from the repo: change{' '}
         <code className="font-mono">.sklp/</code> and push, the node applies it.
       </p>
-      {app.repo && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-red-900 px-4.5 py-4">
+      {app.repo?.pinned && (
+        <p className="rounded-xl border px-4.5 py-4 text-[13px] text-muted-foreground">
+          This app is one of the node's own demos: it cannot be unfollowed, and it comes back after every wipe.
+        </p>
+      )}
+      {app.repo && !app.repo.pinned && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-red-300 dark:border-red-900 px-4.5 py-4">
           <div className="flex flex-col gap-1">
             <span className="font-semibold">Stop following this repo</span>
             <span className="text-[12.5px] text-muted-foreground">
@@ -319,12 +324,12 @@ function Settings({ app }: { app: SpaceView }) {
             type="button"
             onClick={() => unfollow.mutate()}
             disabled={unfollow.isPending}
-            className="ml-auto h-[38px] rounded-lg border border-red-700 px-3.5 text-[13px] font-semibold text-red-300 hover:bg-red-950 disabled:opacity-60"
+            className="ml-auto h-[38px] rounded-lg border border-red-400 dark:border-red-700 px-3.5 text-[13px] font-semibold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-60"
           >
             {unfollow.isPending ? 'Unfollowing…' : 'Unfollow'}
           </button>
           {unfollow.isError && (
-            <p role="alert" className="w-full text-sm text-red-400">
+            <p role="alert" className="w-full text-sm text-red-600 dark:text-red-400">
               {(unfollow.error).message}
             </p>
           )}

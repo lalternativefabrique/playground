@@ -37,12 +37,12 @@ export function LogsPanel({ space, service }: { space: string; service: string }
 
   return (
     <div className="space-y-2">
-      <span className={`text-xs ${status === 'streaming' ? 'text-green-300' : 'text-muted-foreground'}`}>
+      <span className={`text-xs ${status === 'streaming' ? 'text-green-800 dark:text-green-300' : 'text-muted-foreground'}`}>
         {status === 'streaming' ? '● live' : status === 'ended' ? 'stream closed' : 'the node did not stream this log'}
       </span>
       <pre
         ref={box}
-        className="h-[420px] overflow-auto whitespace-pre-wrap rounded-xl border bg-[#08080a] px-4 py-3.5 font-mono text-[12.5px] leading-relaxed text-zinc-300"
+        className="h-[420px] overflow-auto whitespace-pre-wrap rounded-xl border bg-zinc-50 dark:bg-[#08080a] px-4 py-3.5 font-mono text-[12.5px] leading-relaxed text-zinc-700 dark:text-zinc-300"
       >
         {text || (status === 'streaming' ? 'waiting for output…' : '')}
       </pre>

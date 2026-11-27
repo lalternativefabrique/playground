@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/reac
 import type { QueryClient } from '@tanstack/react-query'
 
 import appCss from '../styles.css?url'
+import { THEME_BOOT } from '@/components/theme-toggle'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -19,13 +20,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
+    scripts: [{ children: THEME_BOOT }],
   }),
   shellComponent: RootDocument,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

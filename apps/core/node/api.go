@@ -158,6 +158,15 @@ func (a *API) unfollow(c echo.Context) error {
 	if !nameRE.MatchString(name) {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid name")
 	}
+	follows, err := a.svc.client.Follows(c.Request().Context())
+	if err != nil {
+		return nodeError(err)
+	}
+	for _, f := range follows.Follows {
+		if f.Name == name && f.Pinned {
+			return echo.NewHTTPError(http.StatusForbidden, "this repo is the node's own demo: it stays")
+		}
+	}
 	if err := a.svc.client.Unfollow(c.Request().Context(), name); err != nil {
 		return nodeError(err)
 	}

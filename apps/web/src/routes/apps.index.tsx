@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { GitBranch, Plus } from 'lucide-react'
+import { GitBranch, Plus, Terminal } from 'lucide-react'
 import { ApiError, mine, relativeTime } from '@/lib/api'
 import type { SpaceView } from '@/lib/api'
 import { Shell, useContext, useOverview } from '@/components/shell'
@@ -10,6 +10,12 @@ import { NewAppDialog } from '@/components/new-app-dialog'
 export const Route = createFileRoute('/apps/')({ component: AppsPage })
 
 type Filter = 'all' | 'mine' | 'failing'
+
+const FILTERS: { id: Filter; label: string; hint: string }[] = [
+  { id: 'all', label: 'All', hint: 'Every app on the node' },
+  { id: 'mine', label: 'Added by you', hint: 'Apps you deployed from this browser; there are no accounts here' },
+  { id: 'failing', label: 'Need attention', hint: 'Degraded, down or crash-looping apps' },
+]
 
 function AppsPage() {
   const overview = useOverview()
@@ -32,9 +38,9 @@ function AppsPage() {
 
   const stats = [
     { label: 'Apps', value: apps.length, tone: '' },
-    { label: 'Running', value: apps.filter((s) => appStatus(s) === 'running').length, tone: 'text-green-400' },
-    { label: 'Need attention', value: apps.filter((s) => NEEDS_ATTENTION.includes(appStatus(s))).length, tone: 'text-amber-400' },
-    { label: 'Rolling', value: apps.filter((s) => s.rolling).length, tone: 'text-blue-400' },
+    { label: 'Running', value: apps.filter((s) => appStatus(s) === 'running').length, tone: 'text-green-700 dark:text-green-400' },
+    { label: 'Need attention', value: apps.filter((s) => NEEDS_ATTENTION.includes(appStatus(s))).length, tone: 'text-amber-600 dark:text-amber-400' },
+    { label: 'Rolling', value: apps.filter((s) => s.rolling).length, tone: 'text-blue-700 dark:text-blue-400' },
   ]
 
   return (
@@ -46,10 +52,17 @@ function AppsPage() {
             Everything this throwaway node runs today. Anyone can add one; all of it is gone at the wipe.
           </span>
         </div>
+        <Link
+          to="/node"
+          className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg border border-input bg-raised px-4 text-sm font-medium hover:bg-accent"
+        >
+          <Terminal className="size-4" aria-hidden />
+          Connect your terminal
+        </Link>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-background"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-foreground"
         >
           <Plus className="size-4" aria-hidden />
           New app
@@ -77,17 +90,18 @@ function AppsPage() {
           className="h-[38px] max-w-[420px] flex-[1_1_280px] rounded-lg border border-input bg-panel px-3 text-sm placeholder:text-faint"
         />
         <div role="group" aria-label="Filter" className="flex gap-1.5">
-          {(['all', 'mine', 'failing'] as Filter[]).map((f) => (
+          {FILTERS.map(({ id: f, label, hint }) => (
             <button
               key={f}
               type="button"
               aria-pressed={filter === f}
               onClick={() => setFilter(f)}
-              className={`h-[34px] rounded-full border px-3 text-[13px] capitalize ${
-                filter === f ? 'border-zinc-600 bg-accent text-foreground' : 'border-input text-muted-foreground'
+              title={hint}
+              className={`h-[34px] rounded-full border px-3 text-[13px] ${
+                filter === f ? 'border-zinc-400 dark:border-zinc-600 bg-accent text-foreground' : 'border-input text-muted-foreground'
               }`}
             >
-              {f}
+              {label}
             </button>
           ))}
         </div>
@@ -95,7 +109,7 @@ function AppsPage() {
 
       {overview.isPending && <p className="text-sm text-muted-foreground">Reading the node…</p>}
       {overview.isError && (
-        <p role="alert" className="rounded-xl border border-red-900 p-4 text-sm text-red-300">
+        <p role="alert" className="rounded-xl border border-red-300 dark:border-red-900 p-4 text-sm text-red-700 dark:text-red-300">
           {overview.error instanceof ApiError ? overview.error.message : 'The node is unreachable.'} It may be wiping; try
           again in a minute.
         </p>
@@ -104,13 +118,19 @@ function AppsPage() {
         <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed p-8">
           <span className="font-semibold">The node runs nothing yet.</span>
           <span className="text-sm text-muted-foreground">Deploy a public repo and be the first today.</span>
-          <button type="button" onClick={() => setCreating(true)} className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-background">
+          <button type="button" onClick={() => setCreating(true)} className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-foreground">
             New app
           </button>
         </div>
       )}
       {overview.isSuccess && apps.length > 0 && shown.length === 0 && (
-        <p className="text-sm text-muted-foreground">No app matches.</p>
+        <p className="text-sm text-muted-foreground">
+          {filter === 'mine' && !query
+            ? 'Apps you deploy from this browser show up here. There are no accounts: it only remembers what this browser added.'
+            : filter === 'failing' && !query
+              ? 'Every app is fine right now.'
+              : 'No app matches.'}
+        </p>
       )}
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3.5">

@@ -1,6 +1,9 @@
 package node
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type SpacesResponse struct {
 	Node   string      `json:"node"`
@@ -76,6 +79,17 @@ type Follow struct {
 	Repo    string    `json:"repo"`
 	Branch  string    `json:"branch"`
 	AddedAt time.Time `json:"added_at"`
+	Pinned  bool      `json:"pinned"`
+}
+
+// pin marks the node's own showcase repos: followed from a path on the node,
+// which only its operator can add (a visitor may only follow an https URL).
+// They stay through every visitor action.
+func pin(follows []Follow) []Follow {
+	for i := range follows {
+		follows[i].Pinned = !strings.HasPrefix(follows[i].Repo, "https://")
+	}
+	return follows
 }
 
 type FollowRequest struct {

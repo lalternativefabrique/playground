@@ -61,6 +61,14 @@ function SourcesPage() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{relativeTime(f.added_at)}</td>
                   <td className="px-4 py-3 text-right">
+                    {f.pinned ? (
+                      <span
+                        title="The node's own demo: it stays, whatever visitors do"
+                        className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground"
+                      >
+                        node demo
+                      </span>
+                    ) : (
                     <button
                       type="button"
                       onClick={() => unfollow.mutate(f.name)}
@@ -70,6 +78,7 @@ function SourcesPage() {
                       <Trash2 className="size-3.5" aria-hidden />
                       Unfollow
                     </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -78,7 +87,7 @@ function SourcesPage() {
         </div>
       )}
       {unfollow.isError && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           {(unfollow.error).message}
         </p>
       )}

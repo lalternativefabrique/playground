@@ -1,7 +1,7 @@
 export type Verdict = 'healthy' | 'unstable' | 'degraded' | 'down' | 'starting' | 'stopped' | 'unknown'
 export type Health = 'healthy' | 'pending' | 'failed' | 'neutral'
 
-export type Follow = { name: string; repo: string; branch: string; added_at: string }
+export type Follow = { name: string; repo: string; branch: string; added_at: string; pinned: boolean }
 
 export type SpaceHealth = {
   verdict: Verdict

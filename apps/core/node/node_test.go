@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/labstack/echo/v4"
 )
 
 func TestAssessReadsACrashLoopBehindReady(t *testing.T) {
@@ -176,5 +178,29 @@ func TestNextWipeIsTodayOrTomorrowInTheZone(t *testing.T) {
 	}
 	if got := w.Next(time.Date(2026, 11, 27, 20, 0, 0, 0, paris)); !got.Equal(time.Date(2026, 11, 28, 20, 0, 0, 0, paris)) {
 		t.Fatalf("at 20:00: %v", got)
+	}
+}
+
+func TestTheNodesOwnDemosCannotBeUnfollowed(t *testing.T) {
+	c, calls := fakeNode(t, map[string]any{
+		"GET /v1/follows": FollowsResponse{Follows: []Follow{
+			{Name: "starter-test", Repo: "/home/architect/demo-repos/starter-test.git"},
+			{Name: "mine", Repo: "https://github.com/me/mine"},
+		}},
+		"DELETE /v1/follows/mine": "",
+	})
+	e := echo.New()
+	NewAPI(NewService(c), PublicContext{}, Wipe{Hour: 20, Zone: time.UTC}).Register(e.Group("/api/v1"))
+	for name, want := range map[string]int{"starter-test": http.StatusForbidden, "mine": http.StatusNoContent} {
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, httptest.NewRequest(http.MethodDelete, "/api/v1/follows/"+name, nil))
+		if rec.Code != want {
+			t.Errorf("unfollow %s: %d, want %d", name, rec.Code, want)
+		}
+	}
+	for _, call := range *calls {
+		if call == "DELETE /v1/follows/starter-test" {
+			t.Fatal("a pinned follow reached the node")
+		}
 	}
 }

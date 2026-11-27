@@ -1,23 +1,54 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
-  --color-background: #0e0e10;
-  --color-panel: #131316;
-  --color-raised: #16161a;
-  --color-foreground: #ededed;
-  --color-muted-foreground: #a1a1aa;
-  --color-faint: #8a8a93;
-  --color-border: #232328;
-  --color-input: #2f2f36;
-  --color-accent: #1f1f24;
-  --color-brand: #8b7cf6;
-  --color-brand-soft: #c4b5fd;
+  --color-background: var(--background);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-accent: var(--accent);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 :root {
+  color-scheme: light;
+  --background: #fafafa;
+  --panel: #ffffff;
+  --raised: #ffffff;
+  --foreground: #18181b;
+  --muted-foreground: #52525b;
+  --faint: #71717a;
+  --border: #e4e4e7;
+  --input: #d4d4d8;
+  --accent: #f4f4f5;
+  --brand: #6d5ce7;
+  --brand-foreground: #ffffff;
+  --brand-soft: #5b4bd6;
+}
+
+.dark {
   color-scheme: dark;
+  --background: #0e0e10;
+  --panel: #131316;
+  --raised: #16161a;
+  --foreground: #ededed;
+  --muted-foreground: #a1a1aa;
+  --faint: #8a8a93;
+  --border: #232328;
+  --input: #2f2f36;
+  --accent: #1f1f24;
+  --brand: #8b7cf6;
+  --brand-foreground: #0e0e10;
+  --brand-soft: #c4b5fd;
 }
 
 * {

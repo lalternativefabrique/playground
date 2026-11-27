@@ -57,8 +57,8 @@ export function NewAppDialog({ ctx, onClose }: { ctx?: PublicContext; onClose: (
         {tab === 'cli' && <CliSteps ctx={ctx} />}
         {tab === 'agent' && <AgentSteps ctx={ctx} />}
       </div>
-      <div role="note" className="mx-5 mb-5 flex flex-col gap-1 rounded-xl border border-amber-700 bg-[#3a2a06]/60 px-3.5 py-3 text-[12.5px] text-amber-200">
-        <strong className="text-amber-50">This is a throwaway playground, not a host.</strong>
+      <div role="note" className="mx-5 mb-5 flex flex-col gap-1 rounded-xl border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-[#3a2a06]/60 px-3.5 py-3 text-[12.5px] text-amber-900 dark:text-amber-200">
+        <strong className="text-amber-950 dark:text-amber-50">This is a throwaway playground, not a host.</strong>
         <span>
           Your app is deleted tonight with all its data. Everyone sees it and its logs, and can break it. Public repos and
           images only, never secrets or real data.
@@ -132,7 +132,7 @@ function RepoForm({ onDone }: { onDone: () => void }) {
         </span>
       </div>
       {follow.isError && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           {follow.error instanceof ApiError ? follow.error.message : 'The node did not answer.'}
         </p>
       )}
@@ -143,7 +143,7 @@ function RepoForm({ onDone }: { onDone: () => void }) {
         <button
           type="submit"
           disabled={follow.isPending}
-          className="ml-auto h-10 rounded-lg bg-brand px-4.5 text-sm font-semibold text-background disabled:opacity-60"
+          className="ml-auto h-10 rounded-lg bg-brand px-4.5 text-sm font-semibold text-brand-foreground disabled:opacity-60"
         >
           {follow.isPending ? 'Deploying…' : 'Deploy'}
         </button>

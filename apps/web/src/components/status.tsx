@@ -20,14 +20,14 @@ const DOT: Record<AppStatus, string> = {
 }
 
 const BADGE: Record<AppStatus, string> = {
-  running: 'bg-green-900/40 text-green-300',
-  rolling: 'bg-blue-900/40 text-blue-300',
-  degraded: 'bg-amber-900/40 text-amber-300',
-  unstable: 'bg-orange-900/40 text-orange-300',
-  down: 'bg-red-900/40 text-red-300',
-  starting: 'bg-blue-900/40 text-blue-200',
-  stopped: 'bg-zinc-800 text-zinc-300',
-  unknown: 'bg-zinc-800 text-zinc-300',
+  running: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
+  rolling: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
+  degraded: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300',
+  unstable: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300',
+  down: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  starting: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200',
+  stopped: 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
+  unknown: 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
 }
 
 export function StatusDot({ status, className = '' }: { status: AppStatus; className?: string }) {
