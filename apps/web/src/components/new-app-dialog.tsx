@@ -6,11 +6,12 @@ import type { PublicContext } from '@/lib/api'
 import { CopyableCommand } from '@/components/copyable-command'
 import { Tabs } from '@/components/tabs'
 
-type Tab = 'repo' | 'compose' | 'cli' | 'agent'
+type Tab = 'repo' | 'compose' | 'k8s' | 'cli' | 'agent'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'repo', label: 'Git repo' },
   { id: 'compose', label: 'Docker Compose' },
+  { id: 'k8s', label: 'Kubernetes' },
   { id: 'cli', label: 'Terminal' },
   { id: 'agent', label: 'Agent (MCP)' },
 ]
@@ -54,6 +55,7 @@ export function NewAppDialog({ ctx, onClose }: { ctx?: PublicContext; onClose: (
       <div className="p-5">
         {tab === 'repo' && <RepoForm onDone={() => dialog.current?.close()} />}
         {tab === 'compose' && <ComposeSteps />}
+        {tab === 'k8s' && <KubernetesSteps />}
         {tab === 'cli' && <CliSteps ctx={ctx} />}
         {tab === 'agent' && <AgentSteps ctx={ctx} />}
       </div>
@@ -166,13 +168,48 @@ function ComposeSteps() {
       </span>
       <CopyableCommand
         label="3 · Tell the node what to deploy (.sklp/deploy-root.yaml)"
-        cmd={'kind: deploy-root\nnode: sklet-demo-v1-server\ndeployments:\n  - space: my-app\n    path: .sklp/web/deploy.yaml'}
+        cmd={DEPLOY_ROOT}
       />
-      <span className="text-[13px] text-muted-foreground">
-        4 · Push, then follow the repo from the Git repo tab. Kubernetes manifests work the same way with{' '}
-        <code className="font-mono">sklp init -from k8s</code>.
-      </span>
+      <span className="text-[13px] text-muted-foreground">4 · Push, then follow the repo from the Git repo tab.</span>
+      <ThrowawayValues />
     </div>
+  )
+}
+
+const DEPLOY_ROOT =
+  'kind: deploy-root\nnode: sklet-demo-v1-server\ndeployments:\n  - space: my-app\n    path: .sklp/web/deploy.yaml'
+
+function KubernetesSteps() {
+  return (
+    <div className="flex flex-col gap-3">
+      <span className="text-[13px] text-muted-foreground">
+        sklp turns Kubernetes manifests into a deploy. In your repo, with sklp 0.2.23 or later, and{' '}
+        <code className="font-mono">kustomize</code> or <code className="font-mono">kubectl</code> on your PATH:
+      </span>
+      <CopyableCommand label="1 · Convert your manifests" cmd="sklp init -from k8s -stack web" />
+      <span className="text-[13px] text-muted-foreground">
+        It picks your production kustomize overlay, else your top kustomization, else a <code className="font-mono">k8s/</code>{' '}
+        folder; add <code className="font-mono">-path overlays/production</code> to choose.
+      </span>
+      <span className="text-[13px] text-muted-foreground">
+        2 · Open <code className="font-mono">.sklp/web/deploy.yaml</code> and resolve every{' '}
+        <code className="font-mono">TODO(import)</code>. Deployments and StatefulSets became services, Jobs and CronJobs
+        jobs, Ingress and HTTPRoute routes (give each a host on this node), Secrets <code className="font-mono">${'{VAR}'}</code>.
+      </span>
+      <CopyableCommand label="3 · Tell the node what to deploy (.sklp/deploy-root.yaml)" cmd={DEPLOY_ROOT} />
+      <span className="text-[13px] text-muted-foreground">4 · Push, then follow the repo from the Git repo tab.</span>
+      <ThrowawayValues />
+    </div>
+  )
+}
+
+function ThrowawayValues() {
+  return (
+    <p className="rounded-lg border border-dashed border-input px-3 py-2.5 text-[12.5px] text-muted-foreground">
+      The node refuses to start while a <code className="font-mono">${'{VAR}'}</code> is unset. Here, write throwaway
+      values in their place, and delete any <code className="font-mono">backup:</code> block with its{' '}
+      <code className="font-mono">BACKUP_S3_*</code> lines: nothing is kept anyway.
+    </p>
   )
 }
 
