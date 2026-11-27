@@ -70,7 +70,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <a
-              href="https://sklp.dev/docs"
+              href="https://sklp.skalpai.dev/docs/"
               className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground"
             >
               <BookOpen className="size-4" aria-hidden />
