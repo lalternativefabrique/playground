@@ -172,61 +172,144 @@ function ServiceRow({ app, service }: { app: string; service: ServiceView }) {
   )
 }
 
-type Event = { key: string; result: string; kind: string; what: string; detail: string; at: string }
+type Rollout = {
+  key: string
+  service: string
+  from: string
+  to: string
+  result: string
+  reason?: string
+  started: string
+  finished?: string
+  source: 'rollout' | 'watch'
+}
 
-const RESULT_BADGE: Record<string, string> = {
-  live: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
-  applied: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
-  rolled_back: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300',
-  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+function tag(image: string) {
+  const i = image.lastIndexOf(':')
+  return i > 0 && !image.slice(i).includes('/') ? image.slice(i + 1) : image
+}
+
+function seconds(from: string, to?: string) {
+  if (!to) return undefined
+  const s = (new Date(to).getTime() - new Date(from).getTime()) / 1000
+  return Number.isFinite(s) && s >= 0 ? s : undefined
+}
+
+function fmt(s?: number) {
+  if (s === undefined) return ''
+  return s < 60 ? `${Math.round(s)} s` : `${Math.floor(s / 60)} min ${Math.round(s % 60)} s`
+}
+
+const OUTCOME: Record<string, { label: string; tone: string; story: (r: Rollout) => string }> = {
+  succeeded: {
+    label: 'kept',
+    tone: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    story: (r) =>
+      `Started next to the old version, took all the traffic once ready, held through the soak, then the old one was retired${r.finished ? ` (${fmt(seconds(r.started, r.finished))} in all)` : ''}.`,
+  },
+  live: {
+    label: 'kept',
+    tone: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    story: () => 'The new tag held through the soak and stays.',
+  },
+  rolled_back: {
+    label: 'rolled back',
+    tone: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300',
+    story: (r) =>
+      `The new version failed while it was being watched; traffic went straight back to the previous one, which had never been stopped${r.reason ? `: ${r.reason}` : '.'}`,
+  },
+  failed: {
+    label: 'failed',
+    tone: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    story: (r) => `The new version never became ready; the old one kept serving${r.reason ? `: ${r.reason}` : '.'}`,
+  },
+  applied: {
+    label: 'applied',
+    tone: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+    story: () => 'Applied; the outcome is not settled yet.',
+  },
+}
+
+const ROLLING = {
+  label: 'rolling',
+  tone: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+  story: () => 'In progress: the new version starts next to the old one, then takes the traffic once ready.',
 }
 
 function Deployments({ app }: { app: SpaceView }) {
-  const events: Event[] = [
-    ...(app.watches ?? []).flatMap((w) =>
-      w.rolls.map((r) => ({
-        key: `roll-${w.name}-${r.created_at}`,
-        result: r.result,
-        kind: 'Image roll',
-        what: `${w.service} ${r.from_tag} → ${r.to_tag}`,
-        detail: r.error ?? '',
-        at: r.created_at,
-      })),
-    ),
+  const rollouts: Rollout[] = [
     ...(app.services ?? []).flatMap((s) =>
       s.rollouts.map((r) => ({
         key: `rollout-${s.name}-${r.started_at}`,
+        service: s.name,
+        from: tag(r.from_image),
+        to: tag(r.to_image),
         result: r.result,
-        kind: 'Rollout',
-        what: `${s.name} ${r.to_image}`,
-        detail: r.reason ?? '',
-        at: r.started_at,
+        reason: r.reason,
+        started: r.started_at,
+        finished: r.finished_at && !r.finished_at.startsWith('0001') ? r.finished_at : undefined,
+        source: 'rollout' as const,
       })),
     ),
-  ].sort((a, b) => b.at.localeCompare(a.at))
+    ...(app.watches ?? []).flatMap((w) =>
+      w.rolls.map((r) => ({
+        key: `roll-${w.name}-${r.created_at}`,
+        service: w.service,
+        from: r.from_tag,
+        to: r.to_tag,
+        result: r.result,
+        reason: r.error,
+        started: r.created_at,
+        finished: r.finished_at,
+        source: 'watch' as const,
+      })),
+    ),
+  ].sort((a, b) => b.started.localeCompare(a.started))
 
-  if (events.length === 0) {
-    return (
-      <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
-        Nothing rolled yet. Add a <code className="font-mono">.sklp/image-watches.yaml</code> to your repo and the node rolls
-        new tags on its own: soaked, kept, or rolled back.
-      </p>
-    )
-  }
   return (
-    <ol className="rounded-xl border">
-      {events.map((e) => (
-        <li key={e.key} className="flex flex-wrap items-center gap-3 border-b border-zinc-100 dark:border-zinc-900 px-4 py-3 text-[13.5px] last:border-b-0">
-          <span className={`min-w-[86px] rounded-full px-2.5 py-0.5 text-center text-[11px] font-semibold ${RESULT_BADGE[e.result] ?? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'}`}>
-            {e.result.replace('_', ' ')}
-          </span>
-          <span className="font-semibold">{e.kind}</span>
-          <span className="font-mono text-[12.5px] text-zinc-700 dark:text-zinc-300">{e.what}</span>
-          {e.detail && <span className="text-muted-foreground">{e.detail}</span>}
-          <span className="ml-auto text-[12.5px] text-muted-foreground">{relativeTime(e.at)}</span>
-        </li>
-      ))}
-    </ol>
+    <div className="flex flex-col gap-5">
+      <section className="grid gap-3 rounded-xl border bg-panel p-4.5 md:grid-cols-3">
+        {[
+          ['1 · Start beside it', 'The new version starts next to the one serving. Visitors stay on the old one meanwhile.'],
+          ['2 · Switch at once', 'As soon as it answers its health check, all traffic moves to it in one go. No mix of versions.'],
+          ['3 · Keep watching', 'For a soak window the old version stays ready, without traffic. If the new one falls, traffic goes back to it on its own.'],
+        ].map(([title, body]) => (
+          <div key={title} className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-semibold">{title}</span>
+            <span className="text-[12.5px] leading-relaxed text-muted-foreground">{body}</span>
+          </div>
+        ))}
+      </section>
+
+      {rollouts.length === 0 ? (
+        <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+          No rollout yet. Push a new image tag in <code className="font-mono">.sklp/</code>, or add an image watch, and it
+          shows up here.
+        </p>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {rollouts.map((r) => {
+            const o = r.finished || r.source === 'watch' ? (OUTCOME[r.result] ?? ROLLING) : ROLLING
+            return (
+              <li key={r.key} className="flex flex-col gap-2 rounded-xl border px-4.5 py-3.5">
+                <div className="flex flex-wrap items-center gap-2.5 text-[13.5px]">
+                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${o.tone}`}>{o.label}</span>
+                  <span className="font-semibold">{r.service}</span>
+                  <span className="font-mono text-[12.5px]">
+                    {r.from} → {r.to}
+                  </span>
+                  <span className="ml-auto text-[12.5px] text-muted-foreground">
+                    {relativeTime(r.started)}
+                    {r.finished && ` · ${fmt(seconds(r.started, r.finished))}`}
+                  </span>
+                </div>
+                <span className="text-[13px] leading-relaxed text-muted-foreground">{o.story(r)}</span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+    </div>
   )
 }
 

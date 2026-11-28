@@ -1,0 +1,8 @@
+watches:
+  - name: starter-whoami
+    service: whoami
+    space: starter
+    image_repo: docker.io/traefik/whoami
+    # v1.10.1 is deployed; the node rolls it to the newest v1.10.x by itself.
+    tag_pattern: '^v1\.10\.[0-9]$'
+    node: sklet-demo-v1-server

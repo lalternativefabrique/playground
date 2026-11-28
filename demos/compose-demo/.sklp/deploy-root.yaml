@@ -1,0 +1,7 @@
+kind: deploy-root
+
+node: sklet-demo-v1-server
+
+deployments:
+  - space: compose-demo
+    path: .sklp/web/deploy.yaml

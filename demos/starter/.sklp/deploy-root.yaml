@@ -1,0 +1,9 @@
+kind: deploy-root
+
+# The public demo node. Keep it as is.
+node: sklet-demo-v1-server
+
+deployments:
+  # Rename the space: it is your app's name on the node and in its URL.
+  - space: starter
+    path: .sklp/web/deploy.yaml

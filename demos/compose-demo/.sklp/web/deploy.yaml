@@ -1,0 +1,25 @@
+# Imported for production from compose.yaml by `sklp init -from compose -to deploy`,
+# then its three TODO(import) resolved for the public demo node:
+# - routes: the published port 3001 is served on compose-demo.demo.lalter.eu.
+# - gateway: the demo node serves its apps over plain HTTP, so no ACME email.
+# - backup: none on purpose; the demo node wipes every volume each evening.
+version: 1
+kind: deploy
+name: web
+
+services:
+  kuma:
+    image: docker.io/louislam/uptime-kuma:1.23.16
+    port: 3001
+    volumes:
+      - kuma-data:/app/data
+    ready:
+      tcp: localhost:3001
+      timeout: 120s
+
+spaces:
+  compose-demo:
+    gateway:
+      routes:
+        - service: kuma
+          host: compose-demo.demo.lalter.eu
